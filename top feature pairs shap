@@ -1,0 +1,34 @@
+import numpy as np
+import shap
+from sklearn.ensemble import RandomForestRegressor
+
+# Generate some dummy but meaningful data
+num_samples = 100
+num_features = 5
+X = np.random.rand(num_samples, num_features)
+y = np.random.rand(num_samples)
+
+# Define and train a RandomForestRegressor model
+model = RandomForestRegressor()
+model.fit(X, y)
+
+# Create a TreeExplainer object
+explainer = shap.TreeExplainer(model)
+
+# Calculate SHAP values for all samples
+shap_values = explainer.shap_values(X)
+
+# Compute the interaction values
+interaction_values = shap_values.sum(axis=0) - shap_values
+
+# Compute the sum of absolute interaction values for each pair of features
+interaction_sums = np.abs(interaction_values).sum(axis=0)
+
+# Find the indices of the pairs with the highest interaction sums
+top_indices = np.unravel_index(np.argsort(interaction_sums, axis=None)[::-1], interaction_sums.shape)
+
+# Print the pairs of features with the highest interaction values
+for i in range(len(top_indices[0])-1):
+    feature_1 = top_indices[0][i]
+    feature_2 = top_indices[0][(i+1) % len(top_indices[0])]  # Wrap around to the first feature
+    print(f"Pair {i+1}: Features {feature_1} and {feature_2}")
