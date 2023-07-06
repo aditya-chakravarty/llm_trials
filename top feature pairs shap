@@ -1,3 +1,6 @@
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import shap
 from sklearn.ensemble import RandomForestRegressor
@@ -32,3 +35,40 @@ for i in range(len(top_indices[0])-1):
     feature_1 = top_indices[0][i]
     feature_2 = top_indices[0][(i+1) % len(top_indices[0])]  # Wrap around to the first feature
     print(f"Pair {i+1}: Features {feature_1} and {feature_2}")
+
+# instead visualize using a heatmap 
+
+interactions_matrix = np.zeros((num_features, num_features))
+
+for i in range(len(top_indices[0])):
+    feature_1 = top_indices[0][i]
+    feature_2 = top_indices[0][(i + 1) % len(top_indices[0])]
+    interactions_matrix[feature_1, feature_2] = interaction_sums[i]
+    interactions_matrix[feature_2, feature_1] = interaction_sums[i]  # Assign symmetric value
+
+
+'''
+When computing the interaction values using SHAP, the diagonal terms represent the contribution of each 
+feature in isolation or how much each feature alone contributes to the prediction. Since we are comparing 
+the interaction values of different feature pairs, the self-interactions (diagonal terms) will have the
+ highest values because they are effectively capturing the total effect of a single feature on the prediction.
+
+However, in the context of identifying feature interactions, we are usually interested in the off-diagonal
+ terms, where the interaction values indicate the combined effect of two features that cannot 
+ be explained by their individual contributions alone.
+ 
+
+'''
+np.fill_diagonal(interactions_matrix, 0)
+
+mask = np.triu(np.ones_like(interactions_matrix, dtype=bool))
+
+# Create a heatmap using seaborn
+plt.figure(figsize=(8, 6))
+sns.heatmap(interactions_matrix, cmap='Blues', annot=True, fmt='.2f', cbar=True, mask=mask)
+plt.xlabel('Features')
+plt.ylabel('Features')
+plt.title('Feature Interaction Heatmap')
+
+
+plt.show()
