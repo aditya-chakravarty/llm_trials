@@ -43,3 +43,40 @@ def output_fn(prediction, content_type='application/json'):
         return response_body
     else:
         raise ValueError(f"Unsupported content type: {content_type}")
+
+
+
+
+
+
+
+-------------------------------------
+
+import numpy as np
+import json
+import cv2
+
+# Function to preprocess the input image
+def preprocess_image(image_path):
+    img = cv2.imread(image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = img.astype('float32')
+    return img
+
+# Path to your input image
+image_path = 'path/to/your/input/image.jpg'
+input_image = preprocess_image(image_path)
+
+# Create the request payload
+request_payload = {
+    'image': input_image.tolist()  # Convert the numpy array to list
+}
+
+# Send the request to the endpoint and get the response
+response = predictor.predict(request_payload)
+
+# Convert the response back to numpy array
+prediction = np.array(json.loads(response))
+
+# Print the prediction result
+print("Prediction result:", prediction)
